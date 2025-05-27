@@ -7,6 +7,8 @@ import java.sql.SQLException;
 
 import org.springframework.stereotype.Repository;
 
+import com.aerovistadrones.app.entities.dto.LoginDto;
+
 import db.DB;
 import db.DbException;
 
@@ -38,7 +40,7 @@ public class LoginDao {
 	    }
 	}
 	
-public int checkEmailExists(String email) {
+	public int checkEmailExists(String email) {
 		
 		int userExists = 0;
 		
@@ -62,5 +64,32 @@ public int checkEmailExists(String email) {
 			DB.closeConnection(conn);
 	    }
 		return userExists;
+	}
+	
+	public LoginDto getUserData(String email) {
+		
+		Connection conn = null;
+	    PreparedStatement pst = null;
+	    try {
+	    	conn = DB.getConnection();
+	    	pst = conn.prepareStatement("SELECT USER_EMAIL, USER_SENHA FROM TB_USUARIO WHERE 1=1 AND USER_EMAIL = ?");
+	    	pst.setString(1, email);
+	    	
+	    	ResultSet rs = pst.executeQuery();
+	    	
+	    	LoginDto resultVo = new LoginDto();
+	    	
+	    	if(rs.next()) {
+	    		resultVo.setLoginEmail(rs.getString("USER_EMAIL"));
+	    		resultVo.setLoginSenha(rs.getString("USER_SENHA"));
+	    	}
+	    	
+	    	return resultVo;
+	    }catch(SQLException e) {
+	    	throw new DbException(e.getMessage());
+	    }finally {
+	    	DB.closeStatemenet(pst);
+			DB.closeConnection(conn);
+	    }	    
 	}
 }

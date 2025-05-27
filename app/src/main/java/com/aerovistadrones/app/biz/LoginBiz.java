@@ -1,7 +1,13 @@
 package com.aerovistadrones.app.biz;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import com.aerovistadrones.app.dao.LoginDao;
@@ -10,32 +16,43 @@ import com.aerovistadrones.app.entities.dto.LoginDto;
 @Service
 public class LoginBiz {
 
-	@Autowired
-	private LoginDao loginDao;
+    @Autowired
+    private LoginDao loginDao;
 
-	public boolean logar(LoginDto loginDto) {
+    @Autowired
+    private JwtEncoder jwtEncoder;
 
-		boolean success = false;
+    public String autenticarEObterToken(LoginDto loginDto) {
+        if (!logar(loginDto)) {
+            return null;
+        }
 
-		if (checkEmailExists(loginDto.getLoginEmail())) {
+        Instant now = Instant.now();
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("aerovista-app")
+                .issuedAt(now)
+                .expiresAt(now.plus(1, ChronoUnit.HOURS))
+                .subject(loginDto.getLoginEmail())
+                .claim("scope", "read")
+                .build();
 
-			String senhaBanco = loginDao.selectUserPw(loginDto.getLoginEmail());
+        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    }
 
-			if (verificarSenha(loginDto.getLoginSenha(), senhaBanco))
-				success = true;
-		}
-		return success;
-	}
+    private boolean logar(LoginDto loginDto) {
+        if (!checkEmailExists(loginDto.getLoginEmail())) {
+            return false;
+        }
 
-	private boolean checkEmailExists(String email) {
-		if (loginDao.checkEmailExists(email) > 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+        String senhaBanco = loginDao.selectUserPw(loginDto.getLoginEmail());
+        return verificarSenha(loginDto.getLoginSenha(), senhaBanco);
+    }
 
-	private static boolean verificarSenha(String senhaForm, String senhaBd) {
-		return BCrypt.checkpw(senhaForm, senhaBd);
-	}
+    private boolean checkEmailExists(String email) {
+        return loginDao.checkEmailExists(email) > 0;
+    }
+
+    private static boolean verificarSenha(String senhaForm, String senhaBd) {
+        return BCrypt.checkpw(senhaForm, senhaBd);
+    }
 }

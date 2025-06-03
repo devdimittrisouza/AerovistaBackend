@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
@@ -65,5 +67,36 @@ public class OrcamentoDao {
 	    	DB.closeConnection(conn);
 	    }
 	    return rowsAffected;
+	}
+	
+	public List<OrcamentoDto> getOrcamentosByUserId(int userId) {
+	    List<OrcamentoDto> lista = new ArrayList<>();
+	    Connection conn = null;
+	    PreparedStatement pst = null;
+
+	    try {
+	        conn = DB.getConnection();
+	        pst = conn.prepareStatement("SELECT ORC_TIPO_EVENTO, ORC_DATA_INICIO, ORC_DATA_FIM, ORC_COMPLEMENTARES FROM TB_ORCAMENTO WHERE USER_ID = ?");
+	        pst.setInt(1, userId);
+
+	        ResultSet rs = pst.executeQuery();
+
+	        while(rs.next()) {
+	            OrcamentoDto dto = new OrcamentoDto();
+	            dto.setOrcTipoEvento(rs.getString("ORC_TIPO_EVENTO"));
+	            dto.setOrcDataInicio(rs.getTimestamp("ORC_DATA_INICIO").toLocalDateTime());
+	            dto.setOrcDataFim(rs.getTimestamp("ORC_DATA_FIM").toLocalDateTime());
+	            dto.setOrcComplementares(rs.getString("ORC_COMPLEMENTARES"));
+	            // fkUserId não precisa setar aqui se não usar no front
+	            lista.add(dto);
+	        }
+
+	    } catch(SQLException e) {
+	        throw new DbException(e.getMessage());
+	    } finally {
+	        DB.closeStatemenet(pst);
+	        DB.closeConnection(conn);
+	    }
+	    return lista;
 	}
 }

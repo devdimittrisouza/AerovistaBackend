@@ -1,6 +1,6 @@
 package com.aerovistadrones.app.biz;
 
-import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +31,20 @@ public class OrcamentoBiz {
 			throw new Exception(e.getMessage());
 		}
 		
+	}
+	
+	public List<OrcamentoDto> listarOrcamentosDoUsuario() throws Exception {
+	    try {
+	        String email = getJwtEmail();
+	        Integer userId = orcDao.getUserIdByEmail(email);
+
+	        if(userId == null) throw new Exception("Usuário não encontrado");
+
+	        return orcDao.getOrcamentosByUserId(userId);
+
+	    } catch(Exception e) {
+	        throw new Exception(e.getMessage());
+	    }
 	}
 
 	private String getJwtEmail() {

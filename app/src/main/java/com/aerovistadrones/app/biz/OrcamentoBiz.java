@@ -2,6 +2,8 @@ package com.aerovistadrones.app.biz;
 
 import java.util.List;
 
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -23,6 +25,9 @@ public class OrcamentoBiz {
 			Integer userId = orcDao.getUserIdByEmail(email);
 			
 			if(userId == null) throw new Exception("Usuário não encontrado");
+			
+			orcDto.setOrcTipoEvento(Jsoup.clean(orcDto.getOrcTipoEvento(), Safelist.basic()));
+	        orcDto.setOrcComplementares(Jsoup.clean(orcDto.getOrcComplementares(), Safelist.basic()));
 			
 			orcDto.setFkUserId(userId);
 			orcDao.insertOrcamento(orcDto);

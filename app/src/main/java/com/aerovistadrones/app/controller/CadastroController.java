@@ -1,6 +1,9 @@
 package com.aerovistadrones.app.controller;
 
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,15 +19,25 @@ public class CadastroController {
 	@Autowired private CadastroBiz cadastroBiz;
 	
 	@PostMapping
-	public int cadastrar(@RequestBody CadastroDto cadDto) {
+	public ResponseEntity<String> cadastrar(@RequestBody CadastroDto cadDto) {
 		
-		boolean result = cadastroBiz.cadastrar(cadDto);
-		
-		if(result) {
-			return 1;
-		}else {
-			return 0;
-		}
+		cadDto.setCadNome(sanitize(cadDto.getCadNome()));
+        cadDto.setCadEmail(sanitize(cadDto.getCadEmail()));
+        cadDto.setCadCpf(sanitize(cadDto.getCadCpf()));
+        cadDto.setCadTel(sanitize(cadDto.getCadTel()));
+        cadDto.setCadSenha(sanitize(cadDto.getCadSenha()));
+
+        boolean result = cadastroBiz.cadastrar(cadDto);
+
+        if (result) {
+            return ResponseEntity.ok("Cadastro realizado com sucesso.");
+        } else {
+            return ResponseEntity.status(409).body("CPF já cadastrado.");
+        }
 		
 	}
+	
+	private String sanitize(String input) {
+        return Jsoup.clean(input, Safelist.none());
+    }
 }

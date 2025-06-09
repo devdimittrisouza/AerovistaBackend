@@ -3,6 +3,8 @@ package com.aerovistadrones.app.biz;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -23,6 +25,13 @@ public class LoginBiz {
     private JwtEncoder jwtEncoder;
 
     public String autenticarEObterToken(LoginDto loginDto) {
+
+    	String cleanEmail = Jsoup.clean(loginDto.getLoginEmail(), Safelist.none());
+        String cleanPw = Jsoup.clean(loginDto.getLoginSenha(), Safelist.none());
+
+        loginDto.setLoginEmail(cleanEmail);
+        loginDto.setLoginSenha(cleanPw);
+
         if (!logar(loginDto)) {
             return null;
         }

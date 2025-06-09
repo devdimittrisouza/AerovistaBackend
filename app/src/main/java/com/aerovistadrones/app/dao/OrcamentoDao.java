@@ -87,7 +87,6 @@ public class OrcamentoDao {
 	            dto.setOrcDataInicio(rs.getTimestamp("ORC_DATA_INICIO").toLocalDateTime());
 	            dto.setOrcDataFim(rs.getTimestamp("ORC_DATA_FIM").toLocalDateTime());
 	            dto.setOrcComplementares(rs.getString("ORC_COMPLEMENTARES"));
-	            // fkUserId não precisa setar aqui se não usar no front
 	            lista.add(dto);
 	        }
 

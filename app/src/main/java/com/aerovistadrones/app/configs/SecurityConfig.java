@@ -37,12 +37,13 @@ public class SecurityConfig {
         	.and()
         	.csrf(csrf -> csrf.disable())
         	.headers(headers -> headers
-            .contentSecurityPolicy("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'")
-        )
+            .contentSecurityPolicy("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'")
+            .and()
+            .frameOptions(frameOptions -> frameOptions.deny())
+            .contentTypeOptions(Customizer.withDefaults()))
         	.authorizeHttpRequests(auth -> auth
             .requestMatchers("/authenticate", "/api/login", "/api/cadastrar").permitAll()
-            .anyRequest().authenticated()
-        )
+            .anyRequest().authenticated())
         	.httpBasic(httpBasic -> httpBasic.disable())
         	.oauth2ResourceServer(conf -> conf.jwt(Customizer.withDefaults()));
 
